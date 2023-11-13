@@ -2,43 +2,52 @@
 
 import { redirect } from 'next/navigation'
 
-const page = async ({ params }: { params: { shortUrl: string } }) => {
+const page = ({ params }: { params: { shortUrl: string } }) => {
 
-    if (params.shortUrl) {
-        let headersList = {
-            "Accept": "*/*",
-        }
-        let response = await fetch(process.env.URL + "/shorturl?code=" + params.shortUrl, {
-            method: "GET",
-            headers: headersList
-        });
+    const redirectFunction = async () => {
+        try {
+            if (params.shortUrl) {
+                let headersList = {
+                    "Accept": "*/*",
+                };
 
-        let data = await response.json() as {
-            shortLink: {
-                id: number,
-                original: string,
-                shorten: string,
-                createdAt: Date,
-                updatedAt: Date
-                userId?: object
+                let response = await fetch(process.env.NEXT_PUBLIC_URL + "/shorturl?code=" + params.shortUrl, {
+                    method: "GET",
+                    headers: headersList
+                });
+
+                let data = await response.json() as {
+                    shortLink: {
+                        id: number,
+                        original: string,
+                        shorten: string,
+                        createdAt: Date,
+                        updatedAt: Date,
+                        userId?: object
+                    }
+                };
+
+                let originalLink;
+
+                if (data?.shortLink) {
+                    originalLink = data.shortLink.original;
+                }
+
+                if (originalLink) {
+                    window.location.replace(originalLink);
+                }
             }
+        } catch (error) {
+            console.log(error);
+            // Consider adding more robust error handling here
         }
-        // console.log(data.shortLink.original);
-        let originalLink;
+    };
 
-        if (data !== null && data.shortLink !== null && data.shortLink !== undefined) {
-            originalLink = data.shortLink.original;
-        }
+    redirectFunction();
 
-        if (originalLink) {
-            redirect(originalLink)
-        }
-    }
-    return (
-        <>
 
-        </>
-    )
+
+    return null;
 }
 
 export default page

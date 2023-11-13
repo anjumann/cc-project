@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 const navigation = [
   { name: 'Product', href: '#' },
@@ -13,6 +14,54 @@ const navigation = [
 export default function Hero() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [link, setLink] = useState('')
+  const [generated, setGenerated] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [err, setError] = useState('')
+  const baseUrl = process.env.NEXT_PUBLIC_URL
+
+  const submission = async () => {
+
+    setLoading(true)
+    if (!link) {
+      setError("Enter the link")
+      setLoading(false)
+      return
+    }
+
+    try {
+      let data = await fetch(baseUrl + "/shorturl", {
+        method: "POST",
+        body: JSON.stringify({
+          "original": link
+        }),
+        headers: {
+          "Accept": "*/*",
+          "Content-Type": "application/json"
+        }
+
+      })
+      let response = await data.json() as {
+        data:{
+          createdAt: Date,
+          id: number,
+          original: string,
+          shorten : string,
+          updatedAt :Date
+          userId : object | null
+
+        }
+      }
+
+      // console.log(response.data.shorten)
+      setGenerated(response.data.shorten)
+
+    } catch (error) {
+      console.log(error);
+
+    }
+
+    setLoading(false)
+  }
 
   return (
     <div className="bg-none">
@@ -123,16 +172,26 @@ export default function Hero() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
 
-              <input type="text" placeholder="Enter your link" className=' py-2.5 text-sm font-semibold text-gray-900 px-2 shadow-sm rounded-md' value={link} onChange={(e)=>{setLink(e.target.value)}} />
+              <input type="text" placeholder="Enter your link" className=' py-2.5 text-sm font-semibold text-gray-900 px-2 shadow-sm rounded-md' value={link} onChange={(e) => { setLink(e.target.value) }}
+                disabled={loading}
+              />
 
               <button
                 className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-
+                onClick={submission}
+                disabled={loading}
               >
-                Create shortlink
+                {loading ? "Loading" : "Create shortlink"}
+
               </button>
 
             </div>
+            {
+              err && <div className='mt-10 text-red-500' > {err} </div>
+            }
+            {
+              generated && <div className='mt-10' > shorten Link is {`->`} <Link className='underline underline-offset-2' href={`${baseUrl}/${generated}`} > {`${baseUrl}/${generated}`} </Link> </div>
+            }
           </div>
         </div>
         {/* <div
