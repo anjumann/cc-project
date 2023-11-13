@@ -1,7 +1,5 @@
 "use client"
 
-import { redirect } from 'next/navigation'
-
 const page = ({ params }: { params: { shortUrl: string } }) => {
 
     const redirectFunction = async () => {
